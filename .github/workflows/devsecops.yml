@@ -44,7 +44,7 @@ jobs:
             --failOnCVSS 7
 
       - name: Upload OWASP report as artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v3.1.2
         with:
           name: dependency-check-report
           path: dependency-check-report
