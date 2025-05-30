@@ -75,38 +75,37 @@ jobs:
   dast:
     runs-on: ubuntu-latest
     needs: secrets
-    services:
-      dvwa:
-        image: vulnerables/web-dvwa
-        ports:
-          - 8080:80
-        options: >-
-          --health-cmd "curl -s http://localhost | grep -q 'DVWA'"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 10
+
+    permissions:
+      contents: read
+      actions: read
 
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v3
+      - name: Set up Docker (DinD)
+        uses: docker/setup-buildx-action@v2
 
-      - name: Wait for DVWA to be ready
+      - name: Start Docker service
         run: |
-          echo "Waiting for DVWA to become healthy..."
+          sudo systemctl start docker
+          docker --version
+
+      - name: Start DVWA container
+        run: |
+          docker run -d -p 8080:80 --name dvwa vulnerables/web-dvwa
+          echo "Waiting for DVWA to start..."
           sleep 20
 
       - name: Install OWASP ZAP CLI
         run: |
           sudo snap install zaproxy --classic
-          zap.sh -version
 
-      - name: Run OWASP ZAP Baseline Scan
+      - name: Run OWASP ZAP scan
         run: |
           mkdir -p zap-report
           zap.sh -cmd -quickurl http://localhost:8080 -quickout zap-report/report.html -quickprogress -quickscan
 
-      - name: Print ZAP Report Output
+      - name: Print ZAP report
         run: |
-          echo "=== ZAP Report Preview ==="
-          head -n 50 zap-report/report.html || echo "Report missing"
+          echo "==== ZAP Report ===="
+          head -n 40 zap-report/report.html || echo "Report not found"
 
