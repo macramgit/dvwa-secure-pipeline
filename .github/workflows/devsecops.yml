@@ -57,5 +57,4 @@ jobs:
         run: pip install semgrep
 
       - name: Run Semgrep scan
-        run: |
-          semgrep --config=auto --error
+        run: semgrep --config=auto --error
