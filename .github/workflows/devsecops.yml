@@ -19,3 +19,22 @@ jobs:
 
       - name: Build Docker image
         run: docker build -t dvwa:latest .
+  sca:
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Install Trivy
+        run: |
+          sudo apt-get install wget apt-transport-https gnupg lsb-release -y
+          wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | sudo gpg --dearmor -o /usr/share/keyrings/trivy.gpg
+          echo "deb [signed-by=/usr/share/keyrings/trivy.gpg] https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/trivy.list
+          sudo apt-get update
+          sudo apt-get install trivy -y
+
+      - name: Run SCA scan on source code
+        run: |
+          trivy fs --severity HIGH,CRITICAL --exit-code 1 --skip-dirs .git --format table .
