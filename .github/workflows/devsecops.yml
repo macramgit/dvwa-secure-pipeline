@@ -81,8 +81,7 @@ jobs:
         uses: docker/setup-buildx-action@v2
 
       - name: Start Docker
-        run: |
-          sudo systemctl start docker
+        run: sudo systemctl start docker
 
       - name: Start DVWA container
         run: |
@@ -92,12 +91,11 @@ jobs:
 
       - name: Run OWASP ZAP scan (Docker)
         run: |
-          docker run --network="host" \
-            owasp/zap2docker-stable zap-baseline.py \
+          docker run --network="host" ghcr.io/zaproxy/zaproxy zap-baseline.py \
             -t http://localhost:8080 \
             -r zap-report.html || true
 
-      - name: Show ZAP report summary
+      - name: Show ZAP report preview
         run: |
           echo "==== ZAP Report ===="
           head -n 40 zap-report.html || echo "No report generated"
