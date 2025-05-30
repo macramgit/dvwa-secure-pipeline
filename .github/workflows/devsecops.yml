@@ -105,9 +105,8 @@ jobs:
           mkdir -p zap-report
           zap.sh -cmd -quickurl http://localhost:8080 -quickout zap-report/report.html -quickprogress -quickscan
 
-      - name: Upload ZAP report
-        uses: actions/upload-artifact@v3
-        with:
-          name: zap-report
-          path: zap-report/report.html
+      - name: Print ZAP Report Output
+        run: |
+          echo "=== ZAP Report Preview ==="
+          head -n 50 zap-report/report.html || echo "Report missing"
 
