@@ -32,14 +32,20 @@ jobs:
         run: |
           curl -L -o dependency-check.zip https://github.com/jeremylong/DependencyCheck/releases/download/v8.4.0/dependency-check-8.4.0-release.zip
           unzip dependency-check.zip -d dependency-check
-          chmod +x dependency-check/bin/dependency-check.sh
+          chmod +x dependency-check/dependency-check/bin/dependency-check.sh
 
       - name: Run OWASP Dependency Check
         run: |
-          ./dependency-check/bin/dependency-check.sh \
+          ./dependency-check/dependency-check/bin/dependency-check.sh \
             --project "DVWA" \
             --scan ./dvwa \
             --format "HTML" \
             --out ./dependency-check-report \
             --failOnCVSS 7
+
+      - name: Upload OWASP report as artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: dependency-check-report
+          path: dependency-check-report
 
