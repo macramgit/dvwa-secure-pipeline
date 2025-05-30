@@ -91,11 +91,12 @@ jobs:
 
       - name: Run OWASP ZAP scan (Docker)
         run: |
-          docker run --network="host" ghcr.io/zaproxy/zaproxy zap-baseline.py \
+          docker run --network="host" ghcr.io/zaproxy/zaproxy:stable zap-baseline.py \
             -t http://localhost:8080 \
-            -r zap-report.html || true
+            -r zap-report.html \
+            -m 1
 
-      - name: Show ZAP report preview
+      - name: Print ZAP report preview
         run: |
           echo "==== ZAP Report ===="
           head -n 40 zap-report.html || echo "No report generated"
