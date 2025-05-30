@@ -20,7 +20,7 @@ jobs:
       - name: Build Docker image
         run: docker build -t dvwa:latest .
 
-  sca-owasp:
+  sca:
     runs-on: ubuntu-latest
     needs: build
 
@@ -28,27 +28,15 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v3
 
-      - name: Install unzip and curl
-        run: sudo apt-get update && sudo apt-get install unzip curl -y
-
-      - name: Download OWASP Dependency Check
+      - name: Install Trivy
         run: |
-          curl -L -o dependency-check.zip https://github.com/jeremylong/DependencyCheck/releases/download/v8.4.0/dependency-check-8.4.0-release.zip
-          unzip dependency-check.zip -d .
-          chmod +x dependency-check/dependency-check/bin/dependency-check.sh
+          sudo apt-get install wget apt-transport-https gnupg lsb-release -y
+          wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | sudo gpg --dearmor -o /usr/share/keyrings/trivy.gpg
+          echo "deb [signed-by=/usr/share/keyrings/trivy.gpg] https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/trivy.list
+          sudo apt-get update
+          sudo apt-get install trivy -y
 
-      - name: Run OWASP Dependency Check
+      - name: Run Trivy filesystem scan
         run: |
-          ./dependency-check/dependency-check/bin/dependency-check.sh \
-            --project "DVWA" \
-            --scan ./dvwa \
-            --format "HTML" \
-            --out ./dependency-check-report \
-            --failOnCVSS 7 || true
-
-      - name: Upload OWASP report
-        uses: actions/upload-artifact@v2
-        with:
-          name: dependency-check-report
-          path: dependency-check-report
+          trivy fs --severity LOW,MEDIUM,HIGH,CRITICAL --skip-dirs .git --format table .
 
